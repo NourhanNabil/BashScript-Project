@@ -8,92 +8,108 @@ createTable(){
                 echo "Enter a table name"
                 read tableName 
                 done  
-    if [ "./$tableName" = "`find -name $tableName 2>>/dev/null`" ]
-      then 
-        echo "This table already exists "
-      else
-        echo "the number of Meta-data columns"
-        read noColumns
-            until [ ! -z $noColumns ] 
-              do  
-              echo "Enter a value, no null values accepted"
-              read noColumns 
-              done  
-              until [[ $noColumns =~ [0-9] ]] 
-              do  
-              echo "Enter numbers only"
-              read noColumns 
-              done  
-            fieldSeparator=":" 
-          for i in $(seq $noColumns)
-            do 
-              if [ $i -eq 1 ]
-                then
-                  echo "Enter the primary key of column $i"
-                  read columnName
-                   until [ ! -z $columnName ] 
-                     do  
-                      echo "This is a primary key name, it can not be null"
-                      read columnName 
-                     done  
-                     until [[ $columnName =~ [a-zA-Z] ]]
-                      do  
-                      echo "This is a primary key name, it must start with charachters"
-                      read columnName 
-                     done 
-                  primaryKey=$columnName
-                  firstRecord=$firstRecord$columnName$fieldSeparator
-                else
-                  echo "Enter the column number $i"
-                  read columnName
-                  until [ ! -z $columnName ] 
-                     do  
-                      echo "Enter a value, no null values accepted"
-                      read columnName 
-                     done  
-                    if [ $i = $noColumns ]
-                      then 
-                        firstRecord=$firstRecord$columnName
-                      else
-                        firstRecord=$firstRecord$columnName$fieldSeparator
-                    fi                                  
-              fi 
-            done 
-    #Menu for selection of the table format
-        echo "Choose the desired format for the table"
-    select choice in "XML format" "CVS format" "JSON format" "Other format"
-      do 
-        case $choice in 
-          "XML format" ) 
-            touch $tableName.xml
-            echo $firstRecord > $tableName.xml   
-            echo "Table $tableName.xml created successfully "  
-              firstRecord=""
-              ConnectMenu ;;
-          "CVS format" ) 
-            touch $tableName.csv
-            echo $firstRecord > $tableName.csv    
-            echo "Table $tableName.csv created successfully " 
-            firstRecord=""
+    echo "the number of Meta-data columns"
+    read noColumns
+        until [ ! -z $noColumns ] 
+          do  
+          echo "Enter a value, no null values accepted"
+          read noColumns 
+          done  
+          until [[ $noColumns =~ [0-9] ]] 
+          do  
+          echo "Enter numbers only"
+          read noColumns 
+          done  
+        fieldSeparator=":" 
+      for i in $(seq $noColumns)
+        do 
+          if [ $i -eq 1 ]
+            then
+              echo "Enter the primary key of column $i"
+              read columnName
+                until [ ! -z $columnName ] 
+                  do  
+                  echo "This is a primary key name, it can not be null"
+                  read columnName 
+                  done  
+                  until [[ $columnName =~ [a-zA-Z] ]]
+                  do  
+                  echo "This is a primary key name, it must start with charachters"
+                  read columnName 
+                  done 
+              primaryKey=$columnName 
+              firstRecord=$columnName$fieldSeparator
+            else
+              echo "Enter the column number $i"
+              read columnName
+              until [ ! -z $columnName ] 
+                  do  
+                  echo "Enter a value, no null values accepted"
+                  read columnName 
+                  done  
+                if [ $i = $noColumns ]
+                  then 
+                    firstRecord=$firstRecord$columnName
+                  else
+                    firstRecord=$firstRecord$columnName$fieldSeparator
+                fi                                  
+          fi 
+        done 
+#Menu for selection of the table format
+    echo "Choose the desired format for the table"
+select choice in "XML format" "CVS format" "JSON format" "Other format"
+  do 
+    case $choice in 
+      "XML format" )
+        until [[ "./$tableName.xml" != "`find -type f -name $tableName.xml 2>>/dev/null`" && ! -z $tableName ]]
+        do 
+            echo "This table already exists, enter another table name"
+            read tableName
+        done 
+          touch $tableName.xml
+          echo $firstRecord > $tableName.xml   
+          echo "Table $tableName.xml created successfully "  
+            firstRecord=""  
             ConnectMenu ;;
-          "JSON format" ) 
-            touch $tableName.json
-            echo $firstRecord > $tableName.json    
-            echo "Table $tableName.json created successfully " 
-            firstRecord=""
-            ConnectMenu ;; 
-          "Other format" )
-            echo "enter the name of the format for the table"
-            read format
-            touch $tableName.$format
-            echo $firstRecord > $tableName.$format    
-            echo "Table $tableName.$format created successfully " 
-            firstRecord=""
-            ConnectMenu ;;
-          * ) echo $REPLY is not one of the choices ;;    
-        esac
-      done                        
-    fi    
+      "CVS format" ) 
+        until [[ "./$tableName.cvs" != "`find -type f -name $tableName.cvs 2>>/dev/null`" && ! -z $tableName ]]
+          do 
+              echo "This table already exists, enter another table name"
+              read tableName
+          done       
+        touch $tableName.csv
+        echo $firstRecord > $tableName.csv    
+        echo "Table $tableName.csv created successfully " 
+        firstRecord=""
+        ConnectMenu ;;
+      "JSON format" ) 
+        until [[ "./$tableName.json" != "`find -type f -name $tableName.json 2>>/dev/null`" && ! -z $tableName ]]
+          do 
+              echo "This table already exists, enter another table name"
+              read tableName
+          done           
+        touch $tableName.json
+        echo $firstRecord > $tableName.json    
+        echo "Table $tableName.json created successfully " 
+        firstRecord=""
+        ConnectMenu ;; 
+      "Other format" )
+        echo "enter the name of the format for the table"
+        read format 
+        until [[ "./$tableName.$format" != "`find -type f -name $tableName.$format 2>>/dev/null`" && ! -z $format ]]
+          do 
+              echo "This table already exists, enter another table name"
+              read tableName
+          done            
+        touch $tableName.$format
+        echo $firstRecord > $tableName.$format    
+        echo "Table $tableName.$format created successfully " 
+        firstRecord=""
+        ConnectMenu ;;
+      * ) echo $REPLY is not one of the choices ;;    
+    esac
+  done                        
+    
   }  
 listTables(){
       listTables=`ls -Al |grep ^- | wc -l`
@@ -105,9 +121,9 @@ listTables(){
       fi
         } 
 DropTable(){
-    echo "Enter the name of table to be dropped"  
+    echo "Enter the name of table to be dropped with its format"  
     read nameoftable
-  if [ "./$nameoftable" = "`find -type f -name $nameoftable 2>>/dev/null`" ] #fix this issue
+  if [ "./$nameoftable" = "`find -type f -name $nameoftable 2>>/dev/null`" ] 
     then 
       rm $nameoftable;
       echo "$nameoftable is dropped successfully";
@@ -116,7 +132,7 @@ DropTable(){
   fi 
   } 
 insertIntoTable(){
-    echo "Enter the name of table with the format extension" #fix this issue
+    echo "Enter the name of table with its format"
     read nameOfTable
     separator=":"  
     if [ "./$nameOfTable" = "`find -type f -name $nameOfTable 2>>/dev/null`" ]
@@ -134,7 +150,7 @@ insertIntoTable(){
                   echo "This is a primary key can not be null or already exists"
                   read value 
                  done  
-                  Row=$Row$value$separator
+                  Row=$value$separator
             else
             echo "Enter the value $fieldName Field"
             read value
@@ -154,9 +170,10 @@ insertIntoTable(){
           echo $Row >> $nameOfTable    
           echo "Row successfully inserted into $nameOfTable"  
           Row=""
+          ConnectMenu
       else
           echo "This table does not exist"
-          echo "take into consideration the case sensitivity and the file format" #fix this issue
+          echo "take into consideration the case sensitivity and the file format" 
     fi
   }
 exitScript(){
@@ -173,19 +190,12 @@ selectFromTable(){
               done  
    if [ "./$tableToSelectFrom" = "`find -type f -name $tableToSelectFrom 2>>/dev/null`" ]
     then
-    select choice in "Select all from table" "Select specific record from table"
+    select choice in "Select all from table" "Select specific record from table" "previous menu"
        do
         case $choice in 
             "Select all from table" )
-              echo -e "`sed  "/*/p" $tableToSelectFrom`" 
-              read enter
-                  until [ -z $enter ]  
-                    do  
-                    echo "Hit enter to go back to previous menu"
-                    read enter 
-                    done  
-                      ConnectMenu  
-                    ;;
+              echo -e "`sed  "/*/p" $tableToSelectFrom`"  
+                 ;;
             "Select specific record from table" ) 
                 echo "Enter the value you want to select from $tableToSelectFrom "
                 read value
@@ -198,24 +208,19 @@ selectFromTable(){
                   then
                   NR=`awk -F ":" '{if($1=="'$value'") print NR}' $tableToSelectFrom `
                   echo `sed -n ""$NR"p" $tableToSelectFrom`
-                   read enter
-                    until [ -z $enter ]  
-                        do  
-                        echo "Hit enter to go back to previous menu"
-                        read enter 
-                        done  
-                    ConnectMenu 
                    else
                     echo "This value not found in $tableToSelectFrom "
                  fi
                     ;;
+            "previous menu" )
+                    ConnectMenu  ;;
             * ) echo $REPLY is not one of the choices ;;
         esac
        done 
         
     else
     echo "This Table does not exist"
-    echo "take into consideration the case sensitivity and the file format" #fix this issue
+    echo "take into consideration the case sensitivity and the file format"
    fi 
  }
 deleteFromTable(){
@@ -233,14 +238,14 @@ deleteFromTable(){
             if [ "$primarykeyValue" = "`awk -F ":" '{NF=1; print $1}' $tableToDeleteFrom | grep "\b$primarykeyValue\b"`" ]
               then
                 NR=`awk -F ":" '{if($1=="'$primarykeyValue'") print NR}' $tableToDeleteFrom `
-                 `sed -i ''$NR'd' $tableToDeleteFrom`
+                 `sed -i ''$NR'd' $tableToDeleteFrom` 
                 echo "The row of primary key value $primarykeyValue deleted successfully "
               else 
                 echo "This primary key value does not exist"
             fi     
      else
       echo "This table does not exist"
-      echo "take into consideration the case sensitivity and the file format" #fix this issue
+      echo "take into consideration the case sensitivity and the file format"
     fi 
  }
 # Connect to Main menu 
